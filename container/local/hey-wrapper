@@ -1,0 +1,4 @@
+#!/usr/bin/zsh
+export HEY_TOKEN=onecli-managed-hey
+export HEY_NONINTERACTIVE=1
+exec /usr/local/libexec/hey "$@"

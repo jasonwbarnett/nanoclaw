@@ -62,3 +62,7 @@ forks.md
 # Library templates copied in by setup or create_agent are install state.
 /templates/*
 !/templates/README.md
+
+# Barnett production fork: local-only files
+container/local/hey
+scripts/local/sync-hey.ts

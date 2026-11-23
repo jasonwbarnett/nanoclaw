@@ -168,3 +168,13 @@ ARG AGENT_RUNNER_LOCK_SHA256=
 LABEL dev.nanoclaw.agent-runner-lock-sha256="${AGENT_RUNNER_LOCK_SHA256}"
 ARG IMAGE_SOURCE=local
 LABEL dev.nanoclaw.image-source="${IMAGE_SOURCE}"
+
+# Local preference: zsh for agent interactive shells.
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends zsh && rm -rf /var/lib/apt/lists/* && chsh -s /usr/bin/zsh node && chsh -s /usr/bin/zsh root
+ENV SHELL=/usr/bin/zsh
+USER node
+
+# Official HEY CLI release; credentials injected by OneCLI.
+COPY --chmod=755 local/hey /usr/local/libexec/hey
+COPY --chmod=755 local/hey-wrapper /usr/local/bin/hey
