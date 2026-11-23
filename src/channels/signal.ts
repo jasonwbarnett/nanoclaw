@@ -631,6 +631,24 @@ export function createSignalAdapter(config: {
 
     const platformId = isGroup ? `group:${groupId}` : sender;
 
+    // Text response fallback for Signal, which has no interactive card buttons.
+    const response = text.match(/^\/respond\s+(\S+)\s+(\S+)\s*$/);
+    if (response) {
+      const outcome = await setup.onAction(response[1], response[2], `signal:${sender}`, {
+        platformId,
+        threadId: null,
+      });
+      await sendText(
+        platformId,
+        outcome === 'accepted'
+          ? 'Response recorded.'
+          : outcome === 'refused'
+            ? 'You are not authorized to respond to this request.'
+            : 'This request is closed, unavailable, or could not accept that response.',
+      );
+      return;
+    }
+
     if (text && echoCache.isEcho(platformId, text)) {
       log.debug('Signal: skipping echo', { platformId });
       return;
@@ -922,6 +940,18 @@ export function createSignalAdapter(config: {
       let text: string | null = null;
       if (typeof content === 'string') {
         text = content;
+      } else if (content && typeof content === 'object' && content.type === 'ask_question') {
+        const options = Array.isArray(content.options)
+          ? (content.options as Array<{ label: string; value: string }>)
+          : [];
+        text = [
+          content.title,
+          content.question,
+          '',
+          ...options.map((option) => `${option.label}:\n/respond ${content.questionId} ${option.value}`),
+        ]
+          .filter((part) => part !== undefined && part !== null)
+          .join('\n');
       } else if (content && typeof content === 'object' && typeof content.text === 'string') {
         text = content.text;
       }
