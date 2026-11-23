@@ -968,10 +968,10 @@ export function createSignalAdapter(config: {
 
     async setTyping(platformId: string, _threadId: string | null): Promise<void> {
       if (!connected || !tcp) return;
-      if (platformId.startsWith('group:')) return;
-
       try {
-        const params: Record<string, unknown> = { recipient: [platformId] };
+        const params: Record<string, unknown> = platformId.startsWith('group:')
+          ? { groupId: [platformId.slice('group:'.length)] }
+          : { recipient: [platformId] };
         if (config.account) params.account = config.account;
         await tcp.rpc('sendTyping', params);
       } catch (err) {
