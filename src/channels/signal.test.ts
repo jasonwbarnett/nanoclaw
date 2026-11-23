@@ -1007,13 +1007,16 @@ describe('SignalAdapter', () => {
       await adapter.teardown();
     });
 
-    it('skips typing for groups', async () => {
+    it('sends typing to groups by groupId', async () => {
       const adapter = createAdapter();
       await adapter.setup(createMockSetup());
 
       await adapter.setTyping!('group:abc123', null);
 
-      expect(getRpcCallsForMethod('sendTyping')).toHaveLength(0);
+      const calls = getRpcCallsForMethod('sendTyping');
+      expect(calls).toHaveLength(1);
+      expect(calls[0].params).toMatchObject({ groupId: ['abc123'] });
+      expect(calls[0].params).not.toHaveProperty('recipient');
 
       await adapter.teardown();
     });
